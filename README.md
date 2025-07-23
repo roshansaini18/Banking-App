@@ -1,42 +1,65 @@
-MERN Stack Bank Application
-A secure and scalable banking application built using the MERN (MongoDB, Express.js, React.js, Node.js) stack. This project implements role-based access control to manage operations for customers, employees, and administrators efficiently.
+🏦 MERN Stack Bank Application
 
-Features
-Role-Based Access
-Distinct dashboards and permissions for Customer, Employee, and Admin roles.
 
-Secure login/logout functionality with token-based authentication.
 
-Account Management
-Employee/Admin can create new accounts within their assigned branches.
 
-Update and manage customer details seamlessly.
 
-Automatic email delivery of credentials to new customers and employees.
+A secure and scalable banking application with role-based access control for Customers, Employees, and Administrators. Built using the MERN stack with real-time financial operations and email notifications.
 
-Transactions
-Employees can perform credit/debit transactions restricted to their branch.
+✨ Features
+🔑 Role-Based Access
+Separate dashboards for Customer, Employee, and Admin.
+
+Token-based secure login/logout system.
+
+🏦 Account Management
+Employees/Admins can create new customer accounts under their assigned branches.
+
+Edit and manage customer details with real-time updates.
+
+Automatic email credentials sent upon account creation.
+
+💰 Transactions
+Employees can credit/debit transactions within their branch.
 
 Customers can view personal transaction history.
 
-Employees/Admins can view branch-level summaries:
+Admins/Employees get branch-level transaction summaries:
 
 Total credited amount
 
 Total debited amount
 
-Total balance available in the branch
+Total available balance
 
-Email Notifications
-Instant email notifications for account credentials.
+📧 Email Notifications
+Real-time email alerts for account credentials.
 
-Technology Stack
-Frontend: React.js, Redux/Context API, TailwindCSS or Material UI
+🛠️ Technology Stack
+Frontend:
 
-Backend: Node.js, Express.js
+React.js
 
-Database: MongoDB with Mongoose ODM
+Redux/Context API
 
-Authentication: JWT and bcrypt.js
+TailwindCSS / Material UI
 
-Email Service: Nodemailer (SMTP or email API)
+Backend:
+
+Node.js
+
+Express.js
+
+Database:
+
+MongoDB (Mongoose ODM)
+
+Authentication:
+
+JWT
+
+bcrypt.js
+
+Email Service:
+
+Nodemailer (SMTP / API)
