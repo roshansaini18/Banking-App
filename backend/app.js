@@ -17,6 +17,7 @@ const verifyRouter=require('./routes/verify.routes');
 const customersRouter=require('./routes/customers.routes');
 const findByAccountRouter=require('./routes/findByAccount.routes');
 const transactionRouter=require('./routes/transaction.routes');
+const authRouter = require('./routes/otp.routes');
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -42,6 +43,7 @@ app.use("/api/verify-token",verifyRouter);
 app.use("/api/customers",customersRouter);
 app.use("/api/find-by-account",findByAccountRouter);
 app.use("/api/transaction",transactionRouter);
+app.use("/api/auth", authRouter);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));

@@ -28,7 +28,7 @@ const customersSchema=new Schema({
   customerLoginId:String,
   isActive: {
     type: Boolean,
-    default: true
+    default: false
   }
 },{timestamps:true});
 

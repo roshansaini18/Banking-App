@@ -1,97 +1,97 @@
-const { schema } = require("../model/users.model");
-const dbService=require("../services/db.service");
+const bcrypt = require("bcrypt");
+const dbService = require("../services/db.service");
 
-const getData=async (req,res,schema)=>{
-    try{
-      const dbRes=await dbService.findAllRecord(schema);
-      return  res.status(200).json(
-            {
-                message:"Record found",
-                data:dbRes
-            }
-        )
-    }
-    catch(error){
-        res.status(500).json(
-            {
-                message:"Internal server error",
-                error
-            }
-        )  
-    }
-}
-const createData=async (req,res,schema)=>{
-    try{
+// GET all records
+const getData = async (req, res, schema) => {
+  try {
+    const dbRes = await dbService.findAllRecord(schema);
+    return res.status(200).json({
+      message: "Record found",
+      data: dbRes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error,
+    });
+  }
+};
 
-        const data=req.body;
-        const dbRes=await dbService.createNewRecord(data,schema);
-        res.status(200).json(
-            {
-                message:"Data inserted successfully",
-                success:true,
-                data:dbRes
-            }
-        )
+// CREATE new record
+const createData = async (req, res, schema) => {
+  try {
+    const data = req.body;
+    const dbRes = await dbService.createNewRecord(data, schema);
+    res.status(200).json({
+      message: "Data inserted successfully",
+      success: true,
+      data: dbRes,
+    });
+  } catch (error) {
+    if (error.code == 11000) {
+      res.status(422).json({
+        message: "Already exist",
+        success: false,
+        error,
+      });
+    } else {
+      res.status(500).json({
+        message: "Internal server error",
+        error,
+      });
     }
-    catch(error){
-        if(error.code==11000){
-          res.status(422).json(
-            {
-                message:"Already exist",
-                success:false,
-                error
-            }
-          )
-        }
-        else{
-        res.status(500).json(
-            {
-                message:"Internal server error",
-                error
-            }
-        )    }
-    }
-}
+  }
+};
 
-const updateData=async (req,res,schema)=>{
-    try{
-const {id}=req.params;
-const data=req.body;
-const dbRes=await dbService.updateRecord(id,data,schema);
-return res.status(200).json({
-    message:"Record updated !",
-    data:dbRes
-})
-    }
-    catch(error){
-        return res.status(500).json(
-            {
-                message:"Internal server error",
-                error
-            }
-        ) 
-    }
-}
+// UPDATE user by ID
+const updateData = async (req, res, schema) => {
+  try {
+    const { id } = req.params;
+    const data = { ...req.body };
 
-const deleteData=async (req,res,schema)=>{
-    try{
-const {id}=req.params;
-const dbRes=await dbService.deleteRecord(id,schema);
-return res.status(200).json({
-    message:"Record deleted !",
-    data:dbRes
-})
+    // Hash password if provided
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
     }
-    catch(error){
-        return res.status(500).json(
-            {
-                message:"Internal server error",
-                error
-            }
-        ) 
-    }
-}
 
+    const dbRes = await dbService.updateRecord(id, data, schema);
+
+    if (!dbRes) {
+      return res.status(404).json({
+        message: "Record not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Record updated!",
+      data: dbRes,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error,
+    });
+  }
+};
+
+// DELETE record
+const deleteData = async (req, res, schema) => {
+  try {
+    const { id } = req.params;
+    const dbRes = await dbService.deleteRecord(id, schema);
+    return res.status(200).json({
+      message: "Record deleted!",
+      data: dbRes,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error,
+    });
+  }
+};
+
+// FIND record by account number
 const findByAccount = async (req, res, schema) => {
   try {
     const dbRes = await schema.findOne(req.body);
@@ -114,16 +114,16 @@ const findByAccount = async (req, res, schema) => {
   }
 };
 
+// GET transaction summary
 const getTransactionSummary = async (req, res, schema) => {
-  const { branch,accountNo } = req.query;
-  let matchStage={};
-  if(branch){
-    matchStage.branch=branch;
+  const { branch, accountNo } = req.query;
+  let matchStage = {};
+  if (branch) {
+    matchStage.branch = branch;
   }
-    if(accountNo){
-    matchStage.accountNo=Number(accountNo);
+  if (accountNo) {
+    matchStage.accountNo = Number(accountNo);
   }
-
 
   try {
     const summary = await schema.aggregate([
@@ -187,14 +187,11 @@ const getTransactionSummary = async (req, res, schema) => {
   }
 };
 
-
-
-
-module.exports={
-    createData,
-    getData,
-    updateData,
-    deleteData,
-    findByAccount,
-    getTransactionSummary
-}
+module.exports = {
+  createData,
+  getData,
+  updateData,
+  deleteData,
+  findByAccount,
+  getTransactionSummary,
+};

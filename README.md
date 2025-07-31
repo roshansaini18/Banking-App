@@ -1,2 +1,0 @@
-# Banking-App
- MERN stack

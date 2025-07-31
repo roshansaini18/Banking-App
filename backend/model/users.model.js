@@ -4,7 +4,7 @@ const bcrypt=require("bcrypt");
 
 const usersSchema=new Schema(
     {
-        fullname:String,
+        fullName:String,
         mobile:String,
         email:{
             type:String,
