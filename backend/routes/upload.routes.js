@@ -1,8 +1,16 @@
-const express=require("express");
-const router=express.Router();
-const uploadController=require("../controller/upload.controller");
-const upload=require("../services/upload.service");
+const multer = require("multer");
+const path = require("path");
 
-router.post("/",upload.single("file"),uploadController.uploadFile);
+// Temporary storage in "uploads/" folder
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
 
-module.exports=router;
+const upload = multer({ storage });
+
+module.exports = upload;
