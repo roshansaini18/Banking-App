@@ -1,16 +1,12 @@
-const multer = require("multer");
-const path = require("path");
+const express = require('express');
+const router = express.Router();
+const upload = require('../cloudinaryStorage');
 
-// Temporary storage in "uploads/" folder
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
+router.post('/', upload.single('image'), (req, res) => {
+  if (!req.file || !req.file.path) {
+    return res.status(400).json({ error: 'File upload failed' });
   }
+  res.status(200).json({ url: req.file.path });
 });
 
-const upload = multer({ storage });
-
-module.exports = upload;
+module.exports = router;
