@@ -24,8 +24,7 @@ app.set('view engine', 'jade');
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",          // local dev
+    origin: [     // local dev
       "https://sobank.netlify.app"      // deployed frontend
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
