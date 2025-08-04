@@ -1,12 +1,13 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const upload = require('../cloudinaryStorage');
 
-router.post('/', upload.single('image'), (req, res) => {
-  if (!req.file || !req.file.path) {
-    return res.status(400).json({ error: 'File upload failed' });
-  }
-  res.status(200).json({ url: req.file.path });
-});
+// Import the new controller and middleware
+const uploadController = require("../controller/upload.controllers");
+const uploadMiddleware = require("../upload.middleware");
+
+// Define the route.
+// The 'uploadMiddleware.single("file")' part will process the incoming file
+// and make it available in 'req.file' before calling 'uploadController.uploadFile'.
+router.post("/", uploadMiddleware.single("file"), uploadController.uploadFile);
 
 module.exports = router;
