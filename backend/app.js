@@ -25,8 +25,8 @@ app.set('view engine', 'jade');
 app.use(
   cors({
     origin: [   
-      "http://localhost:8080"   // local dev
-        "https://s-o-bank.netlify.app"/// deployed frontend
+      "http://localhost:8080",
+        "https://s-o-bank.netlify.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
