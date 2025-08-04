@@ -26,7 +26,7 @@ app.use(
   cors({
     origin: [   
       "http://localhost:8080"   // local dev
-       // deployed frontend
+        "https://s-o-bank.netlify.app"/// deployed frontend
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
