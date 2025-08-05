@@ -1,6 +1,6 @@
 const User = require("../model/users.model");
 const bcrypt = require("bcrypt");
-const sendEmail = require("/email.controller.js"); // FIX: Import the new email service
+onst { sendEmail } = require("./email.controller.js"); // FIX: Import the new email service
 
 /**
  * @description Step 1: Find user by email, generate OTP, and send it via email.
