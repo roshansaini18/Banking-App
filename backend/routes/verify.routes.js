@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // IMPORTANT: Import the NEW middleware, not the old service
-const { verifyAuthToken } = require("../authMiddleware");
+const { verifyAuthToken } = require("../middleware/authMiddleware");
 
 //
 // Use the middleware directly in the route definition.
