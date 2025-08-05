@@ -2,10 +2,10 @@
 
 const express = require('express');
 const router = express.Router();
-const beneficiaryController = require('../beneficiary.controller');
+const beneficiaryController = require('../controller/beneficiary.controller');
 
 // 1. Make sure you are importing your authentication middleware
-const { verifyAuthToken } = require('../middleware/authMiddleware');
+const { verifyAuthToken } = require('../authMiddleware');
 
 // 2. FIX: APPLY THE MIDDLEWARE TO ALL ROUTES IN THIS FILE
 // This is the essential line you are missing. It runs the token check
