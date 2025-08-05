@@ -4,7 +4,6 @@ const dbService = require("../services/db.service");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-// Customer model is not needed here anymore, we can remove it.
 
 const loginFunc = async (req, res, schema) => {
   try {
@@ -36,37 +35,39 @@ const loginFunc = async (req, res, schema) => {
       });
     }
 
-    // --- FIX: Create a minimal and secure payload ---
-    // Only include essential, non-sensitive information.
+    // --- This payload is for the JWT and should remain minimal for security ---
     const payload = {
       _id: user._id.toString(),
       userType: user.userType,
       email: user.email,
-      // You can add accountNo if it's frequently needed and not highly sensitive
-      accountNo: user.accountNo || null 
+      accountNo: user.accountNo || null,
     };
 
-    // Sign the new, smaller payload
+    // Sign the JWT
     const token = jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: "3h" }
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: "3h" }
     );
     
-    // We can also send back some user info to the frontend if needed
+    // --- FIX: This object is sent to the frontend to be stored in localStorage ---
+    // We will add all the necessary fields here.
     const userInfoForFrontend = {
-        email: user.email,
-        userType: user.userType,
-        profile: user.profile,
-        accountNo: user.accountNo
-    }
+      _id: user._id.toString(),
+      email: user.email,
+      userType: user.userType,
+      profile: user.profile,
+      fullName: user.fullName, // <-- ADDED
+      branch: user.branch,     // <-- ADDED
+      accountNo: user.accountNo || null,
+    };
 
     return res.status(200).json({
       message: "Login successful!",
       isLoged: true,
       token,
       userType: user.userType,
-      user: userInfoForFrontend // Send minimal user object for localStorage
+      user: userInfoForFrontend, // Send the complete user object for localStorage
     });
 
   } catch (error) {
