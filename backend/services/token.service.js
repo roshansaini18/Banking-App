@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 // Import the new middleware
-const { verifyAuthToken } = require("../middleware/authMiddleware");
+const { verifyAuthToken } = require("../authMiddleware");
 
 // 1. Use the middleware first. It will handle all verification.
 // 2. If the middleware succeeds, the next function will run.
