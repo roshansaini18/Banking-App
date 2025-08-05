@@ -2,8 +2,7 @@ require("dotenv").config();
 const nodemailer = require("nodemailer");
 
 // ----------------------------------------------------------------
-// 1. YOUR REUSABLE EMAIL SERVICE (This part is already correct)
-// It knows how to send any email but knows nothing about web routes.
+// 1. YOUR REUSABLE EMAIL SERVICE (No changes here)
 // ----------------------------------------------------------------
 const sendEmail = async (options) => {
   try {
@@ -32,9 +31,7 @@ const sendEmail = async (options) => {
 
 
 // ----------------------------------------------------------------
-// 2. NEW CONTROLLER FUNCTION (This part is new)
-// This function is specifically for the route that sends new credentials.
-// It knows how to handle `req` and `res`, and it calls the service.
+// 2. CONTROLLER FOR SENDING NEW ACCOUNT CREDENTIALS (No changes here)
 // ----------------------------------------------------------------
 const sendCredentialsEmail = async (req, res) => {
   const { email, password } = req.body;
@@ -43,38 +40,73 @@ const sendCredentialsEmail = async (req, res) => {
     return res.status(400).json({ message: "Email and password are required.", emailSend: false });
   }
 
-  // Your original email template
   const emailTemplate = `
 Dear Customer,
-
-Thank you for registering with S.O Bank. We are pleased to provide you with your login credentials. Please find your account details below:
-
+Thank you for registering with S.O Bank. Please find your login credentials below:
 Username: ${email}
 Password: ${password}
-
-Kindly ensure that this information is kept confidential. For your security, we recommend changing your password upon first login.
-
 Sincerely,
 S.O Bank`;
 
   try {
-    // Call the reusable service with the specific details for this email
     await sendEmail({
       to: email,
       subject: "Your S.O Bank Account Credentials",
       text: emailTemplate,
     });
-    
     res.status(200).json({ message: "Credentials sent successfully!", emailSend: true });
-
   } catch (error) {
     res.status(500).json({ message: "Failed to send credentials email.", emailSend: false });
   }
 };
 
 
-// 3. EXPORT BOTH FUNCTIONS
+// ----------------------------------------------------------------
+// 3. NEW CONTROLLER FOR SENDING TRANSACTION EMAILS (Add this function)
+// ----------------------------------------------------------------
+const sendTransactionEmail = async (req, res) => {
+  // Destructure all the necessary data from the request body
+  const { to, fullName, accountNo, transactionType, transactionAmount, newBalance, currency, reference } = req.body;
+
+  // Basic validation
+  if (!to || !fullName || !transactionType || !transactionAmount || !newBalance) {
+      return res.status(400).json({ message: "Missing required fields for transaction email.", emailSend: false });
+  }
+
+  const type = transactionType === 'cr' ? 'Credit' : 'Debit';
+  const currencySymbol = currency === 'inr' ? '₹' : '$';
+  
+  const subject = `Transaction Alert: ${type} of ${currencySymbol}${transactionAmount}`;
+  const emailTemplate = `
+Dear ${fullName},
+
+This is a confirmation for a transaction on your account (${accountNo}).
+
+Amount: ${currencySymbol}${Number(transactionAmount).toLocaleString()}
+Type: ${type}
+Reference: ${reference || 'N/A'}
+
+Your new balance is: ${currencySymbol}${Number(newBalance).toLocaleString()}
+
+Thank you for banking with S.O Bank.`;
+
+  try {
+    // Call the reusable service with the transaction details
+    await sendEmail({
+      to: to,
+      subject: subject,
+      text: emailTemplate,
+    });
+    res.status(200).json({ message: "Transaction email sent successfully!", emailSend: true });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to send transaction email.", emailSend: false });
+  }
+};
+
+
+// 4. EXPORT ALL THREE FUNCTIONS
 module.exports = {
-  sendEmail,              // The reusable service
-  sendCredentialsEmail,   // The new controller for your route
+  sendEmail,
+  sendCredentialsEmail,
+  sendTransactionEmail, // <-- Make sure to export the new function
 };
