@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dbService = require("../services/db.service");
-const customersSchema = require("../model/customer.model"); // <-- 1. IMPORT CUSTOMER MODEL
+const Customer = require("../model/customer.model"); // Import the Customer model
 require("dotenv").config();
 
 const loginFunc = async (req, res, schema) => {
@@ -9,64 +9,53 @@ const loginFunc = async (req, res, schema) => {
     const { email, password } = req.body;
     const query = { email };
 
-    // This finds the user in the 'users' collection (for admins, employees, customers)
+    // Step 1: Authenticate against the primary 'users' collection first.
     const user = await dbService.findOneRecord(query, schema);
 
-     // This finds the user in the 'customers' collection (customers)
-    const customer = await dbService.findOneRecord(query, customersSchema);
-    
-
     if (!user) {
-      return res.status(401).json({
-        message: "Invalid credentials!",
-        isLoged: false,
-      });
+      return res.status(401).json({ message: "Invalid credentials!" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(401).json({
-        message: "Invalid credentials!",
-        isLoged: false,
-      });
+      return res.status(401).json({ message: "Invalid credentials!" });
     }
 
     if (!user.isActive) {
-      return res.status(401).json({
-        message: "You are not an active member!",
-        isLoged: false,
-      });
+      return res.status(401).json({ message: "You are not an active member!" });
     }
 
-    // --- LOGIC TO GET ACCOUNT NUMBER ---
+    // --- This is the corrected logic ---
 
-    // 2. After verifying the user, find their corresponding customer details
-    // This is necessary because accountNo is in the 'customers' collection.
+    // Step 2: Fetch customer-specific details ONLY if the user is a customer.
+    let customerDetails = null;
+    if (user.userType === 'customer') {
+      customerDetails = await Customer.findOne({ email: user.email });
+    }
+
+    // Step 3: Build the detailed user object for the frontend.
+    // Use the authenticated 'user' object as the base, and add customer details if they exist.
     const userInfoForFrontend = {
-      _id: customer._id.toString(),
-      email: customer.email,
-      userType: customer.userType,
-      fullName: customer.fullName,
-      profile: customer.profile,
-      branch: customer.branch,
-      accountNo: customer.accountNo,
+      _id: user._id.toString(),
+      email: user.email,
+      userType: user.userType,
+      fullName: user.fullName,
+      profile: user.profile,
+      branch: user.branch,
+      accountNo: customerDetails ? customerDetails.accountNo : null, // Safely get accountNo
     };
 
-    // 4. Create the minimal, secure payload for the JWT
+    // Step 4: Create the minimal payload for the JWT itself.
     const tokenPayload = {
       _id: user._id.toString(),
       userType: user.userType,
     };
 
-    // 5. Sign the JWT
-    const token = jwt.sign(
-        tokenPayload,
-        process.env.JWT_SECRET,
-        { expiresIn: "3h" }
-    );
+    // Step 5: Sign the token.
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "3h" });
 
-    // 6. Send the final response
+    // Step 6: Send the final, correct response.
     return res.status(200).json({
       message: "Login successful!",
       isLoged: true,
