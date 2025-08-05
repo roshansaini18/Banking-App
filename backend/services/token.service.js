@@ -1,36 +1,18 @@
-require("dotenv").config();
-const jwt = require("jsonwebtoken");
+const express = require("express");
+const router = express.Router();
+// Import the new middleware
+const { verifyAuthToken } = require("../middleware/authMiddleware");
 
-const verifyToken = async (req, res) => {
-      const raw = req.headers.authorization;
-    if (!raw) return res.status(401).send("No token");
+// 1. Use the middleware first. It will handle all verification.
+// 2. If the middleware succeeds, the next function will run.
+router.get("/", verifyAuthToken, (req, res) => {
+  // If the code reaches here, it means the token was successfully verified
+  // The user's decoded data is available in req.user from the middleware
+  return res.status(200).json({
+    message: "Token verified",
+    data: req.user, // Send back the decoded user data
+    isVarified: true,
+  });
+});
 
-    const token = raw.replace("Bearer", "");
-    if(!token){
-        return {
-            message:"There is no token !",
-            isVarified:false
-        }
-    }
-
-    try{
-        const decoded=await jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        );
-        return {
-            message:"Token verified !",
-            isVarified:true,
-            data:decoded
-        }
-    }
-    catch(error){
-         return {
-            message:"There is no token !",
-            isVarified:false,
-            error
-        }
-    }
-};
-
-module.exports = { verifyToken };
+module.exports = router;
