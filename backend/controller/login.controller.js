@@ -1,8 +1,7 @@
-// Corrected loginFunc
-
-const dbService = require("../services/db.service");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const dbService = require("../services/db.service");
+const Customer = require("../model/customer.model"); // <-- 1. IMPORT CUSTOMER MODEL
 require("dotenv").config();
 
 const loginFunc = async (req, res, schema) => {
@@ -10,6 +9,7 @@ const loginFunc = async (req, res, schema) => {
     const { email, password } = req.body;
     const query = { email };
 
+    // This finds the user in the 'users' collection (for admins, employees, customers)
     const user = await dbService.findOneRecord(query, schema);
 
     if (!user) {
@@ -35,43 +35,52 @@ const loginFunc = async (req, res, schema) => {
       });
     }
 
-    // --- This payload is for the JWT and should remain minimal for security ---
-    const payload = {
-      _id: user._id.toString(),
-      userType: user.userType,
-      email: user.email,
-      accountNo: user.accountNo || null,
-    };
+    // --- LOGIC TO GET ACCOUNT NUMBER ---
 
-    // Sign the JWT
-    const token = jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: "3h" }
-    );
-    
-    // --- FIX: This object is sent to the frontend to be stored in localStorage ---
-    // We will add all the necessary fields here.
+    // 2. After verifying the user, find their corresponding customer details
+    // This is necessary because accountNo is in the 'customers' collection.
+    let customerDetails = null;
+    if (user.userType === 'customer') {
+      customerDetails = await Customer.findOne({ email: user.email });
+    }
+
+    // 3. Create the detailed user object for the frontend (localStorage)
+    // We combine info from the 'user' and 'customerDetails' objects.
     const userInfoForFrontend = {
       _id: user._id.toString(),
       email: user.email,
       userType: user.userType,
+      fullName: user.fullName,
       profile: user.profile,
-      fullName: user.fullName, // <-- ADDED
-      branch: user.branch,     // <-- ADDED
-      accountNo: user.accountNo || null,
+      branch: user.branch,
+      // Get the account number from customerDetails if it exists
+      accountNo: customerDetails ? customerDetails.accountNo : null,
     };
 
+    // 4. Create the minimal, secure payload for the JWT
+    const tokenPayload = {
+      _id: user._id.toString(),
+      userType: user.userType,
+    };
+
+    // 5. Sign the JWT
+    const token = jwt.sign(
+        tokenPayload,
+        process.env.JWT_SECRET,
+        { expiresIn: "3h" }
+    );
+
+    // 6. Send the final response
     return res.status(200).json({
       message: "Login successful!",
       isLoged: true,
-      token,
+      token: token,
       userType: user.userType,
-      user: userInfoForFrontend, // Send the complete user object for localStorage
+      user: userInfoForFrontend,
     });
-
+    
   } catch (error) {
-    console.error("Login Error:", error); // Log the actual error on the server
+    console.error("Login Error:", error);
     return res.status(500).json({
       message: "Internal server error!",
       isLoged: false,
