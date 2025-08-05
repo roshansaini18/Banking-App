@@ -1,7 +1,10 @@
-const express=require("express");
-const router=express.Router();
+const express = require("express");
+const router = express.Router();
 
-const emailController=require("../controller/email.controller");
-router.post("/",emailController.sendEmail);
+const emailController = require("../controller/email.controller");
 
-module.exports=router;
+// FIX: Point the route to the new 'sendCredentialsEmail' controller function,
+// not the 'sendEmail' service.
+router.post("/", emailController.sendCredentialsEmail);
+
+module.exports = router;
