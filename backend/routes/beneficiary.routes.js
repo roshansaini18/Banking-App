@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const beneficiaryController = require('../controller/beneficiary.controller');
+const beneficiaryController = require('../beneficiary.controller');
 
 // 1. Make sure you are importing your authentication middleware
 const { verifyAuthToken } = require('../middleware/authMiddleware');
@@ -19,5 +19,6 @@ router.route('/')
 
 router.route('/:id')
   .delete(beneficiaryController.deleteBeneficiary);
+
 
 module.exports = router;
