@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dbService = require("../services/db.service");
-const Customer = require("../model/customer.model"); // <-- 1. IMPORT CUSTOMER MODEL
+const customersSchema = require("../model/customer.model"); // <-- 1. IMPORT CUSTOMER MODEL
 require("dotenv").config();
 
 const loginFunc = async (req, res, schema) => {
@@ -11,6 +11,10 @@ const loginFunc = async (req, res, schema) => {
 
     // This finds the user in the 'users' collection (for admins, employees, customers)
     const user = await dbService.findOneRecord(query, schema);
+
+     // This finds the user in the 'customers' collection (customers)
+    const customer = await dbService.findOneRecord(query, customersSchema);
+    
 
     if (!user) {
       return res.status(401).json({
@@ -39,22 +43,14 @@ const loginFunc = async (req, res, schema) => {
 
     // 2. After verifying the user, find their corresponding customer details
     // This is necessary because accountNo is in the 'customers' collection.
-    let customerDetails = null;
-    if (user.userType === 'customer') {
-      customerDetails = await Customer.findOne({ email: user.email });
-    }
-
-    // 3. Create the detailed user object for the frontend (localStorage)
-    // We combine info from the 'user' and 'customerDetails' objects.
     const userInfoForFrontend = {
-      _id: user._id.toString(),
-      email: user.email,
-      userType: user.userType,
-      fullName: user.fullName,
-      profile: user.profile,
-      branch: user.branch,
-      // Get the account number from customerDetails if it exists
-      accountNo: customerDetails ? customerDetails.accountNo : null,
+      _id: customer._id.toString(),
+      email: customer.email,
+      userType: customer.userType,
+      fullName: customer.fullName,
+      profile: customer.profile,
+      branch: customer.branch,
+      accountNo: customer.accountNo,
     };
 
     // 4. Create the minimal, secure payload for the JWT
