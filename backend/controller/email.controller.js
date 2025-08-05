@@ -1,53 +1,36 @@
 require("dotenv").config();
-const nodemailer=require("nodemailer");
+const nodemailer = require("nodemailer");
 
-const sendEmail=(req,res)=>{
-const {email,password}=req.body;
-const transporter=nodemailer.createTransport({
-    service:"gmail",
-    auth:{
-        user:process.env.ADMIN_EMAIL,
-        pass:process.env.ADMIN_EMAIL_PASSWORD
-    }
-});
+// This is now a reusable 'service' function.
+// It accepts an 'options' object so it can send any email.
+const sendEmail = async (options) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      // Using your original environment variables
+      user: process.env.ADMIN_EMAIL,
+      pass: process.env.ADMIN_EMAIL_PASSWORD,
+    },
+  });
 
-const emailTemplate=`
-Dear Customer,
+  const mailOptions = {
+    from: `"S.O Bank" <${process.env.ADMIN_EMAIL}>`, // Sender display name
+    to: options.to,
+    subject: options.subject,
+    text: options.text,
+  };
 
-Thank you for registering with Stack Overflow Bank. We are pleased to provide you with your login credentials. Please find your account details below:
+  // Use await to send the mail and handle errors
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${options.to}`);
+  } catch (error) {
+    console.error("Error sending email: ", error);
+    // Throw the error so the function that called this knows it failed
+    throw new Error("Failed to send email.");
+  }
+};
 
-Username: ${email}
-Password: ${password}
-
-Kindly ensure that this information is kept confidential and is not shared with anyone. For your security, we recommend changing your password upon first login.
-
-If you attempt to withdraw from an empty stack, please contact our support team.
-
-Sincerely,
-Stack Overflow Bank
-`
-
-const mailOption={
-    from:process.env.ADMIN_EMAIL,
-    to:email,
-    subject:"Account Login Credentials",
-    text:emailTemplate
-}
-
-transporter.sendMail(mailOption,(err,info)=>{
-    if(err){
-       return res.status(500).json({
-        message:"Sending failed!",
-        emailSend:false
-       })
-    }
-     res.status(200).json({
-        message:"Sending success!",
-        emailSend:true
-       })
-})
-}
-
-module.exports={
-    sendEmail
-}
+module.exports = {
+  sendEmail,
+};
