@@ -56,20 +56,51 @@ exports.createBeneficiary = async (req, res) => {
 };
 
 // Controller to delete a beneficiary
+// In backend/controller/beneficiary.controller.js
+
 exports.deleteBeneficiary = async (req, res) => {
-  const beneficiaryId = req.params._id; // Using _id as requested
-  const ownerId = req.user._id;
-
   try {
-    const beneficiary = await Beneficiary.findOneAndDelete({ _id: beneficiaryId, owner: ownerId });
+    const beneficiaryIdToDelete = req.params._id;
+    const loggedInUserId = req.user._id;
 
-    if (!beneficiary) {
+    // --- START OF DEBUGGING BLOCK ---
+    console.log("\n--- DEBUGGING deleteBeneficiary ---");
+    
+    // 1. Log the ID of the user who is currently logged in (from the JWT)
+    console.log("Step 1: ID of the currently logged-in user (req.user._id):", loggedInUserId);
+
+    // 2. Find the beneficiary document in the database without checking for the owner
+    const beneficiaryDocument = await Beneficiary.findById(beneficiaryIdToDelete);
+
+    if (!beneficiaryDocument) {
+      console.log("Step 2: Could not find any beneficiary with the ID:", beneficiaryIdToDelete);
+      console.log("--- END OF DEBUGGING ---\n");
+      return res.status(404).json({ success: false, message: 'Beneficiary document not found at all.' });
+    }
+
+    // 3. Log the 'owner' ID that is stored inside that document
+    console.log("Step 2: The beneficiary document was found. Its 'owner' field is:", beneficiaryDocument.owner);
+    
+    // 4. Log the comparison result
+    const isOwner = String(beneficiaryDocument.owner) === String(loggedInUserId);
+    console.log(`Step 3: Does the logged-in user ID match the document's owner ID?`, isOwner);
+
+    console.log("--- END OF DEBUGGING ---\n");
+    // --- END OF DEBUGGING BLOCK ---
+
+
+    // This is the original security check
+    if (!isOwner) {
       return res.status(404).json({ success: false, message: 'Beneficiary not found or you do not have permission to delete it.' });
     }
 
+    // If the check passes, delete the document
+    await Beneficiary.findByIdAndDelete(beneficiaryIdToDelete);
+    
     res.status(200).json({ success: true, message: 'Beneficiary deleted successfully.' });
+
   } catch (error) {
-    console.error("Delete Beneficiary Error:", error);
+    console.error("CRASH in deleteBeneficiary:", error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
