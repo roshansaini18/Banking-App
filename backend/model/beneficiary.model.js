@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 
 const beneficiarySchema = new mongoose.Schema({
-  // The user who owns this beneficiary
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // This links it to your User model
+    ref: 'User',
     required: true,
   },
   payeeName: {
@@ -12,7 +11,8 @@ const beneficiarySchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  accountNumber: {
+  // FIX: Change 'accountNumber' to 'accountNo' to match your customer model
+  accountNo: {
     type: String,
     required: true,
     trim: true,
