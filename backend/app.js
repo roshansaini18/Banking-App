@@ -20,6 +20,7 @@ const transactionRouter=require('./routes/transaction.routes');
 const authRoutes = require('./routes/auth.routes.js');
 const beneficiaryRoutes = require('./routes/beneficiary.routes');
 const transferRoutes = require('./routes/transfer.routes');
+const cardRoutes = require('./routes/card.routes');
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -56,6 +57,7 @@ app.use("/api/transaction",transactionRouter);
 app.use('/api/auth', authRoutes);   
 app.use('/api/beneficiaries', beneficiaryRoutes);  
 app.use('/api/transfers', transferRoutes);   
+app.use('/api/cards', cardRoutes);   
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
