@@ -16,45 +16,39 @@ exports.getBeneficiaries = async (req, res) => {
 // In backend/controller/beneficiary.controller.js
 
 exports.createBeneficiary = async (req, res) => {
-  // Get the data from the request body
-  let { payeeName, accountNumber } = req.body;
+  // FIX: Destructure 'accountNo' to match the form and schema
+  const { payeeName, accountNo } = req.body;
   const ownerId = req.user._id;
 
-  // Basic validation
-  if (!payeeName || !accountNumber) {
-    return res.status(400).json({ success: false, message: "Payee Name and Account Number are required." });
-  }
-
   try {
-    // FIX: Convert the incoming string from the form into a Number to match the database.
-    const accountNumberAsNumber = Number(accountNumber.trim());
-
-    // Now, the query will correctly search for a Number.
-    const recipientAccount = await Customer.findOne({ accountNumber: accountNumberAsNumber });
-
+    // 1. Check if the recipient account number exists
+    // FIX: The query now uses the correct field name 'accountNo'
+    const recipientAccount = await Customer.findOne({ accountNo: Number(accountNo.trim()) });
+    
     if (!recipientAccount) {
       return res.status(404).json({ success: false, message: 'Recipient account number not found.' });
     }
 
+    // 2. Check if the user is trying to add themselves
     if (recipientAccount.email === req.user.email) {
       return res.status(400).json({ success: false, message: "You cannot add yourself as a beneficiary." });
     }
 
-    // Use the original string version for consistency if you save it elsewhere, or the number.
-    // Sticking to the original string from the form is fine here.
-    const existingBeneficiary = await Beneficiary.findOne({ owner: ownerId, accountNumber: accountNumber.trim() });
+    // 3. Check if this beneficiary already exists for this user
+    // FIX: Use 'accountNo' for the check
+    const existingBeneficiary = await Beneficiary.findOne({ owner: ownerId, accountNo: accountNo.trim() });
     if (existingBeneficiary) {
       return res.status(400).json({ success: false, message: 'This beneficiary is already in your list.' });
     }
 
+    // 4. Create and save the new beneficiary
     const newBeneficiary = await Beneficiary.create({
       owner: ownerId,
       payeeName,
-      accountNumber: accountNumber.trim(), // Save the original string to the beneficiary document
+      accountNo: accountNo.trim(), // FIX: Use 'accountNo'
     });
     res.status(201).json({ success: true, data: newBeneficiary });
   } catch (error) {
-    console.error("Create Beneficiary Error:", error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -78,3 +72,4 @@ exports.deleteBeneficiary = async (req, res) => {
   }
 
 };
+
