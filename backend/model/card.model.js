@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const cardSchema = new mongoose.Schema({
-  // Link the card to the user's login ID
+  // Link the card to the user's login ID for easy lookups and security
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
-  // We'll also store the customer ID for easier lookups if needed
+  // Also link to the specific customer document
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Customer',
@@ -27,8 +27,8 @@ const cardSchema = new mongoose.Schema({
     required: true,
   },
   cvv: {
-    // IMPORTANT: In a real production app, storing CVV is heavily regulated (PCI DSS).
-    // For this project, we store it as a string, but this is NOT for production.
+    // IMPORTANT: Storing CVV is heavily regulated (PCI DSS).
+    // For this project this is fine, but never do this in a real production application.
     type: String,
     required: true,
   },
