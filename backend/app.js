@@ -19,6 +19,7 @@ const findByAccountRouter=require('./routes/findByAccount.routes');
 const transactionRouter=require('./routes/transaction.routes');
 const authRoutes = require('./routes/auth.routes.js');
 const beneficiaryRoutes = require('./routes/beneficiary.routes');
+const transferRoutes = require('./routes/transfer.routes');
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -54,6 +55,7 @@ app.use("/api/find-by-account",findByAccountRouter);
 app.use("/api/transaction",transactionRouter);
 app.use('/api/auth', authRoutes);   
 app.use('/api/beneficiaries', beneficiaryRoutes);  
+app.use('/api/transfers', transferRoutes);   
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
